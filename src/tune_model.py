@@ -40,6 +40,9 @@ if __name__ == "__main__":
     x_train, x_test, y_train, y_test = _load_data(model_dir+'input')
     x_train, y_train = training_xform(x_train, y_train)
 
+    tf.config.threading.set_inter_op_parallelism_threads = 0
+    tf.config.threading.set_intra_op_parallelism_threads = 0
+
     tuner = RandomSearchTB(
         hypermodel=build_model,
         objective='loss',
