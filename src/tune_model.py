@@ -17,7 +17,7 @@ from model.model import build_model, score_model, training_xform
 from src.randomsearchtb import RandomSearchTB
 
 model_dir = 'model/'
-log_dir = 'logs'
+log_dir = 's3://sagemaker-scf/catchjoe/logs'
 
 
 def _load_data(base_dir):
@@ -42,10 +42,11 @@ if __name__ == "__main__":
 
     tf.config.threading.set_inter_op_parallelism_threads = 0
     tf.config.threading.set_intra_op_parallelism_threads = 0
+    tf.config.threading
 
     tuner = RandomSearchTB(
         hypermodel=build_model,
-        objective='loss',
+        objective='val_loss',
         max_trials=8,
         executions_per_trial=1,
         directory=log_dir,
