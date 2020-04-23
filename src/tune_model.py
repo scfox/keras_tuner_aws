@@ -5,7 +5,37 @@ from kerastuner.tuners import RandomSearch
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
+from tensorboard.plugins.hparams import api as hp
 from model.model import build_model, score_model
+
+model_dir = '../model/'
+log_dir = '../logs'
+
+HP_N_HIDDEN = hp.HParam('n_hidden', hp.Discrete([2, 3, 4]))
+METRIC_ACCURACY = 'binary_accuracy'
+count = 1
+
+with tf.summary.create_file_writer(log_dir+'/hparam_tuning').as_default():
+    hp.hparams_config(
+        hparams=[HP_N_HIDDEN],
+        metrics=[hp.Metric(METRIC_ACCURACY, display_name='binary_accuracy')],
+    )
+
+
+class RandomSearchTB(RandomSearch):
+    def on_trial_end(self, trial):
+        super().on_trial_end(trial)
+        global HP_N_HIDDEN, METRIC_ACCURACY, count
+        config = trial.hyperparameters.get_config()
+        n_hidden = config['values']['n_hidden']
+        with tf.summary.create_file_writer(log_dir+'/hparam_tuning/run-'+str(count)).as_default():
+            accuracy = trial.score
+            hparams = {
+                HP_N_HIDDEN: n_hidden,
+            }
+            hp.hparams(hparams)
+            tf.summary.scalar(METRIC_ACCURACY, accuracy, step=1)
+        count += 1
 
 
 def _load_data(base_dir):
@@ -23,15 +53,14 @@ def _load_data(base_dir):
 if __name__ == "__main__":
     start = datetime.now()
     print(f"Starting hyper parameter optimizations at: {start}")
-    model_dir = '../model/'
     x_train, x_test, y_train, y_test = _load_data(model_dir+'input')
 
-    tuner = RandomSearch(
+    tuner = RandomSearchTB(
         build_model,
         objective='binary_accuracy',
-        max_trials=2,
+        max_trials=3,
         executions_per_trial=1,
-        directory='../logs',
+        directory=log_dir,
         project_name='catchjoe')
 
     print(f"Search space: { tuner.search_space_summary() }")

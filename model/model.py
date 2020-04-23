@@ -7,13 +7,14 @@ def build_model(hp):
     initializer = K.initializers.lecun_normal()
     layers = K.layers
     model = K.models.Sequential()
-    num_layers = 1
+    n_hidden = hp.Int('n_hidden', min_value=2, max_value=4)
+
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
     model.add(layers.Dropout(rate=0.1))
 
     # add hidden layers based on hyperparameter
-    for i in range(0, num_layers):
+    for i in range(0, n_hidden):
         model.add(layers.BatchNormalization())
         model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
         model.add(layers.Dropout(rate=0.1))
