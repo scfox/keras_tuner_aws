@@ -1,30 +1,47 @@
 import tensorflow as tf
 from tensorflow import keras as K
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, log_loss
 
 
-class CustomModel(K.models.Sequential):
-    """Encapsulates model and hyperparameters"""
+def build_model(hp):
+    initializer = K.initializers.lecun_normal()
+    layers = K.layers
+    model = K.models.Sequential()
+    num_layers = 1
+    model.add(layers.BatchNormalization())
+    model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
+    model.add(layers.Dropout(rate=0.1))
 
-    def __init__(self, hp):
-        """constructor"""
-        super().__init__()
-        self.hp = hp
-        self.num_layers = 1
-        self._build_model()
-        return
+    # add hidden layers based on hyperparameter
+    for i in range(0, num_layers):
+        model.add(layers.BatchNormalization())
+        model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
+        model.add(layers.Dropout(rate=0.1))
 
-    def _build_model(self):
-        initializer = tf.keras.initializers.lecun_normal()
-        layers = tf.keras.layers
+    model.add(layers.Dense(1, activation=tf.nn.selu, kernel_initializer=initializer))
+    model.compile(loss='binary_crossentropy',
+                  optimizer=tf.keras.optimizers.Nadam(lr=0.0001, beta_1=0.9, beta_2=0.999),
+                  metrics=[tf.keras.metrics.binary_accuracy])
+    return model
 
-        self.add(layers.BatchNormalization())
-        self.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
-        self.add(layers.Dropout(rate=0.1))
 
-        # add hidden layers based on hyperparameter
-        for i in range(0, self.num_layers):
-            self.add(layers.BatchNormalization())
-            self.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
-            self.add(layers.Dropout(rate=0.1))
+def score_model(model, x_train, x_test, y_train, y_test):
+    """Score model performance"""
+    print("\nScores on training:")
+    y_train_pred = model.predict_classes(x_train)
+    show_metrics(y_train, y_train_pred)
 
-        self.add(layers.Dense(1, activation=tf.nn.selu, kernel_initializer=initializer))
+    print("\nScores on test:")
+    y_test_pred = model.predict_classes(x_test)
+    show_metrics(y_test, y_test_pred)
+
+
+def show_metrics(y, y_pred):
+    print(f"log_loss: {log_loss(y, y_pred)}")
+    print(f"f1: {f1_score(y, y_pred , average='macro')}")
+    print(f"precision: {precision_score(y, y_pred , average='macro')}")
+    print(f"recall: {recall_score(y, y_pred , average='macro')}")
+    print(f"confusion matrix:")
+    print(f"{confusion_matrix(y, y_pred)}")
+
+

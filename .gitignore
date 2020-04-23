@@ -112,3 +112,6 @@ lambda_pkgs/
 
 # PyCharm
 .idea/
+
+logs/
+model/trained
