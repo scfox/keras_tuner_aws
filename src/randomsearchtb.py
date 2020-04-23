@@ -24,6 +24,8 @@ class RandomSearchTB(RandomSearch):
         hparams = self.get_hparams(config)
         with tf.summary.create_file_writer(self.log_dir+'/hparam_tuning/run-'+str(self.count)).as_default():
             hp.hparams(hparams)
+            print(f"objective: {self.objective}")
+            print(f"trial.score: {trial.score}")
             tf.summary.scalar(self.objective, trial.score, step=1)
         self.count += 1
 
