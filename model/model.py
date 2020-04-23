@@ -8,20 +8,22 @@ def build_model(hp):
     layers = K.layers
     model = K.models.Sequential()
     n_hidden = hp.Int('n_hidden', min_value=2, max_value=4)
-
+    dropout_rate = hp.Float('dropout_rate', min_value=0.01, max_value=0.1, sampling='linear')
+    init_lr = hp.Fixed('init_lr', value=.001)
+    beta1 = hp.Choice('beta1', values=[0.9, 0.95])
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
-    model.add(layers.Dropout(rate=0.1))
+    model.add(layers.Dropout(rate=dropout_rate))
 
     # add hidden layers based on hyperparameter
     for i in range(0, n_hidden):
         model.add(layers.BatchNormalization())
         model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
-        model.add(layers.Dropout(rate=0.1))
+        model.add(layers.Dropout(rate=dropout_rate))
 
     model.add(layers.Dense(1, activation=tf.nn.selu, kernel_initializer=initializer))
     model.compile(loss='binary_crossentropy',
-                  optimizer=tf.keras.optimizers.Nadam(lr=0.0001, beta_1=0.9, beta_2=0.999),
+                  optimizer=tf.keras.optimizers.Nadam(lr=init_lr, beta_1=beta1, beta_2=0.999),
                   metrics=[tf.keras.metrics.binary_accuracy])
     return model
 

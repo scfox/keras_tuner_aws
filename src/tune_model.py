@@ -4,6 +4,7 @@ from datetime import datetime
 from kerastuner.tuners import RandomSearch
 import pandas as pd
 import os
+import shutil
 from sklearn.model_selection import train_test_split
 from tensorboard.plugins.hparams import api as hp
 from model.model import build_model, score_model
@@ -28,11 +29,13 @@ def _load_data(base_dir):
 if __name__ == "__main__":
     start = datetime.now()
     print(f"Starting hyper parameter optimizations at: {start}")
+    # delete logs from any previous run
+    shutil.rmtree(log_dir, ignore_errors=True, onerror=None)
     x_train, x_test, y_train, y_test = _load_data(model_dir+'input')
 
     tuner = RandomSearchTB(
         hypermodel=build_model,
-        objective='binary_accuracy',
+        objective='loss',
         max_trials=3,
         executions_per_trial=1,
         directory=log_dir,

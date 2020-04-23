@@ -20,7 +20,7 @@ class TestRandomSearchTB:
         # setup
         rs = RandomSearchTB(hypermodel=build_model, objective='binary_accuracy', max_trials=1)
         c = {
-            'class_name': 'int',
+            'class_name': 'Int',
             'config': {
                 'name': 'n_hidden',
                 'default': None,
@@ -40,7 +40,7 @@ class TestRandomSearchTB:
         # setup
         rs = RandomSearchTB(hypermodel=build_model, objective='binary_accuracy', max_trials=1)
         c_item = {
-            'class_name': 'int',
+            'class_name': 'Int',
             'config': {
                 'name': 'n_hidden',
                 'default': None,
@@ -63,7 +63,7 @@ class TestRandomSearchTB:
         # setup
         rs = RandomSearchTB(hypermodel=build_model, objective='binary_accuracy', max_trials=1)
         c_item = {
-            'class_name': 'int',
+            'class_name': 'Int',
             'config': {
                 'name': 'n_hidden',
                 'default': None,
@@ -82,3 +82,26 @@ class TestRandomSearchTB:
         # verify
         assert type(h).__name__ == 'dict'
         assert len(h) == 1
+
+    def test_hparam_from_config_space_item_float(self):
+        # setup
+        rs = RandomSearchTB(hypermodel=build_model, objective='binary_accuracy', max_trials=1)
+        c_item = {
+            'class_name': 'Float',
+            'config':
+                {
+                    'name': 'dropout_rate',
+                    'default': 0.01,
+                    'min_value': 0.01,
+                    'max_value': 0.1,
+                    'step': None,
+                    'sampling': 'linear'}
+        }
+        # test
+        h = rs.hparam_from_config_space_item(c_item)
+        # verify
+        assert type(h).__name__ == 'HParam'
+        assert h.name == 'dropout_rate'
+
+
+
