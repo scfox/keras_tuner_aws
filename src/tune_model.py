@@ -13,7 +13,7 @@ prj_path = str(Path(__file__).parent.absolute()) + '/../'
 print(f"prj_path: {prj_path}")
 sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for runtime
 
-from model.model import build_model, score_model
+from model.model import build_model, score_model, training_xform
 from src.randomsearchtb import RandomSearchTB
 
 model_dir = 'model/'
@@ -38,11 +38,12 @@ if __name__ == "__main__":
     # delete logs from any previous run
     shutil.rmtree(log_dir, ignore_errors=True, onerror=None)
     x_train, x_test, y_train, y_test = _load_data(model_dir+'input')
+    x_train, y_train = training_xform(x_train, y_train)
 
     tuner = RandomSearchTB(
         hypermodel=build_model,
         objective='loss',
-        max_trials=3,
+        max_trials=8,
         executions_per_trial=1,
         directory=log_dir,
         project_name='catchjoe')
@@ -52,7 +53,7 @@ if __name__ == "__main__":
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5)
 
     tuner.search(x_train, y_train,
-                 epochs=1,
+                 epochs=10,
                  validation_data=(x_test, y_test),
                  callbacks=[early_stopping_cb, lr_scheduler_cb])
 

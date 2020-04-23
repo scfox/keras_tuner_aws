@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras as K
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, log_loss
+from imblearn.over_sampling import SMOTE
 
 
 def build_model(hp):
@@ -47,4 +48,14 @@ def show_metrics(y, y_pred):
     print(f"confusion matrix:")
     print(f"{confusion_matrix(y, y_pred)}")
 
+
+def training_xform(x_train, y_train):
+    print("Applying OverSampling ----")
+    print(f"Before OverSampling, counts of label '1': {sum(y_train == 1)}")
+    print(f"Before OverSampling, counts of label '0': {sum(y_train == 0)}")
+    sm = SMOTE(random_state=23)
+    x_train, y_train = sm.fit_sample(x_train, y_train)
+    print(f"After OverSampling, counts of label '1': {sum(y_train == 1)}")
+    print(f"After OverSampling, counts of label '0': {sum(y_train == 0)}")
+    return x_train, y_train
 

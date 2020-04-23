@@ -1,1 +1,1 @@
-tensorboard --logdir=logs --port 6012
+tensorboard --logdir=logs --port 6012 --bind_all
