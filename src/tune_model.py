@@ -7,11 +7,17 @@ import os
 import shutil
 from sklearn.model_selection import train_test_split
 from tensorboard.plugins.hparams import api as hp
+from pathlib import Path
+import sys
+prj_path = str(Path(__file__).parent.absolute()) + '/../'
+print(f"prj_path: {prj_path}")
+sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for runtime
+
 from model.model import build_model, score_model
 from src.randomsearchtb import RandomSearchTB
 
-model_dir = '../model/'
-log_dir = '../logs'
+model_dir = 'model/'
+log_dir = 'logs'
 
 
 def _load_data(base_dir):
