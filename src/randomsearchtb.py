@@ -14,8 +14,8 @@ class RandomSearchTB(RandomSearch):
         if dir_param:
             self.log_dir = dir_param
         self.objective = 'val_loss'
-        if kwargs.get('objective'):
-            self.objective = kwargs.get('objective')
+        # if kwargs.get('objective'):
+        #     self.objective = kwargs.get('objective')
         return
 
     def on_trial_end(self, trial):
