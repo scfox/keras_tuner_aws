@@ -22,9 +22,12 @@ class RandomSearchTB(RandomSearch):
         super().on_trial_end(trial)
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
-        score = 0
         if trial.score is not None:
             score = trial.score
+        else:
+            # in distributed training sometimes trial.score is set to 0 incorrectly
+            # print(f"loss metric: {trial.metrics.metrics['loss']._observations}")
+            score = self.pull_loss_from_metrics(trial)
         log_prefix = self.log_dir+'/hparam_tuning/run-'
         tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
         if tuner_id:
@@ -33,6 +36,18 @@ class RandomSearchTB(RandomSearch):
             hp.hparams(hparams)
             tf.summary.scalar(self.objective, score, step=1)
         self.count += 1
+
+    def pull_loss_from_metrics(self, trial):
+        loss = 1.0
+        print("Warning: trial.score is 0.  Pulling score from loss metrics....")
+        loss_metric = trial.metrics.metrics.get('loss')
+        if loss_metric:
+            for key in loss_metric._observations:
+                o = loss_metric._observations[key]
+                if len(o.value) > 0:
+                    if o.value[0] < loss:
+                        loss = o.value[0]
+        return loss
 
     def get_hparams(self, config):
         if self.hparams_def is None:
