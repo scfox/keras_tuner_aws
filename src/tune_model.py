@@ -16,9 +16,13 @@ sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for run
 from model.model import build_model, score_model, training_xform
 from src.randomsearchtb import RandomSearchTB
 
+# distributed settings
 model_dir = 'model/'
 log_dir = 's3://sagemaker-scf/catchjoe/logs'
-#log_dir = 'logs'
+
+# local settings
+# model_dir = '../model/'
+# log_dir = '../logs'
 
 
 def _load_data(base_dir):

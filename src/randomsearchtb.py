@@ -3,7 +3,7 @@ from kerastuner.tuners import RandomSearch, BayesianOptimization
 from tensorboard.plugins.hparams import api as hp
 import os
 
-class RandomSearchTB(BayesianOptimization):
+class RandomSearchTB(RandomSearch):
     def __init__(self, **kwargs):
         """constructor"""
         super().__init__(**kwargs)
@@ -16,9 +16,18 @@ class RandomSearchTB(BayesianOptimization):
         self.objective = 'val_loss'
         if kwargs.get('objective'):
             self.objective = kwargs.get('objective')
+        # self.oracle._score_trial =
         return
 
+    def _score_trial(self, trial):
+        super()._score_trial(trial)
+        print(f"_score_trial with score: {trial.score}")
+
     def on_trial_end(self, trial):
+        if trial is None:
+            print("on_trial_end: trial is None")
+        else:
+            print("on_trial_end: trial has a value")
         if trial.score is not None:
             score = trial.score
         else:
