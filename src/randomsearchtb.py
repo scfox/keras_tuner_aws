@@ -2,6 +2,8 @@ import tensorflow as tf
 from kerastuner.tuners import RandomSearch, BayesianOptimization
 from tensorboard.plugins.hparams import api as hp
 import os
+import pickle
+
 
 class RandomSearchTB(RandomSearch):
     def __init__(self, **kwargs):
@@ -34,6 +36,7 @@ class RandomSearchTB(RandomSearch):
             # in distributed training sometimes trial.score is set to 0 incorrectly
             # print(f"loss metric: {trial.metrics.metrics['loss']._observations}")
             score = self.pull_loss_from_metrics(trial)
+        print(f"trial.metrics: { pickle.dumps(trial.metrics) }")
         super().on_trial_end(trial)
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
