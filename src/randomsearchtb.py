@@ -14,19 +14,20 @@ class RandomSearchTB(RandomSearch):
         if dir_param:
             self.log_dir = dir_param
         self.objective = 'val_loss'
-        # if kwargs.get('objective'):
-        #     self.objective = kwargs.get('objective')
+        if kwargs.get('objective'):
+            self.objective = kwargs.get('objective')
         return
 
     def on_trial_end(self, trial):
         super().on_trial_end(trial)
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
+        score = 0
+        if trial.score is not None:
+            score = trial.score
         with tf.summary.create_file_writer(self.log_dir+'/hparam_tuning/run-'+str(self.count)).as_default():
             hp.hparams(hparams)
-            print(f"objective: {self.objective}")
-            print(f"trial.score: {trial.score}")
-            tf.summary.scalar(self.objective, trial.score, step=1)
+            tf.summary.scalar(self.objective, score, step=1)
         self.count += 1
 
     def get_hparams(self, config):
