@@ -1,0 +1,1 @@
+aws ec2 describe-fleets --filters '{"Name": "activity-status", "Values": ["fulfilled"]}' --profile agilemobile
