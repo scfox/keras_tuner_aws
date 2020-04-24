@@ -22,6 +22,7 @@ class RandomSearchTB(RandomSearch):
         super().on_trial_end(trial)
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
+        # score = self.pull_loss_from_metrics(trial)
         if trial.score is not None:
             score = trial.score
         else:
@@ -40,6 +41,8 @@ class RandomSearchTB(RandomSearch):
     def pull_loss_from_metrics(self, trial):
         loss = 1.0
         print("Warning: trial.score is None.  Pulling score from loss metrics....")
+        for m in trial.metrics.metrics:
+            print(f"Metric: {m}")
         loss_metric = trial.metrics.metrics.get('loss')
         if loss_metric:
             print("loss_metric defined")
