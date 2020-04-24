@@ -9,9 +9,9 @@ def build_model(hp):
     layers = K.layers
     model = K.models.Sequential()
     n_hidden = hp.Int('n_hidden', min_value=2, max_value=4)
-    dropout_rate = hp.Float('dropout_rate', min_value=0.01, max_value=0.1, sampling='linear')
+    dropout_rate = hp.Float('dropout_rate', min_value=0.06, max_value=0.1, sampling='linear')
     init_lr = hp.Fixed('init_lr', value=.001)
-    beta1 = hp.Choice('beta1', values=[0.9, 0.95])
+    beta1 = hp.Choice('beta1', values=[0.88, 0.95])
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
     model.add(layers.Dropout(rate=dropout_rate))
