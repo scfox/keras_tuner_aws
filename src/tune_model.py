@@ -69,7 +69,7 @@ if __name__ == "__main__":
     tuner = RandomSearchTB(
         hypermodel=build_model,
         objective='loss',
-        max_trials=1,
+        max_trials=25,
         executions_per_trial=1,
         directory=log_dir,
         project_name='catchjoe')
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5)
 
     tuner.search(x_train, y_train,
-                 epochs=1,
+                 epochs=20,
                  validation_data=(x_test, y_test),
                  callbacks=[early_stopping_cb, lr_scheduler_cb])
 
