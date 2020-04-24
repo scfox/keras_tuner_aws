@@ -39,14 +39,20 @@ class RandomSearchTB(RandomSearch):
 
     def pull_loss_from_metrics(self, trial):
         loss = 1.0
-        print("Warning: trial.score is 0.  Pulling score from loss metrics....")
+        print("Warning: trial.score is None.  Pulling score from loss metrics....")
         loss_metric = trial.metrics.metrics.get('loss')
         if loss_metric:
+            print("loss_metric defined")
             for key in loss_metric._observations:
                 o = loss_metric._observations[key]
+                print(f"processing {key} observation")
                 if len(o.value) > 0:
+                    print(f"at least one value")
                     if o.value[0] < loss:
+                        print(f"o.value[0]: {o.value[0]}")
                         loss = o.value[0]
+        else:
+            print("loss_metric not defined")
         return loss
 
     def get_hparams(self, config):
