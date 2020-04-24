@@ -1,5 +1,5 @@
 import tensorflow as tf
-from kerastuner.tuners import RandomSearch
+from kerastuner.tuners import RandomSearch, BayesianOptimization
 from tensorboard.plugins.hparams import api as hp
 import os
 
@@ -19,16 +19,16 @@ class RandomSearchTB(RandomSearch):
         return
 
     def on_trial_end(self, trial):
-        super().on_trial_end(trial)
-        config = trial.hyperparameters.get_config()
-        hparams = self.get_hparams(config)
-        # score = self.pull_loss_from_metrics(trial)
         if trial.score is not None:
             score = trial.score
         else:
             # in distributed training sometimes trial.score is set to 0 incorrectly
             # print(f"loss metric: {trial.metrics.metrics['loss']._observations}")
             score = self.pull_loss_from_metrics(trial)
+        super().on_trial_end(trial)
+        config = trial.hyperparameters.get_config()
+        hparams = self.get_hparams(config)
+        # score = self.pull_loss_from_metrics(trial)
         log_prefix = self.log_dir+'/hparam_tuning/run-'
         tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
         if tuner_id:
