@@ -1,7 +1,7 @@
 import tensorflow as tf
 from kerastuner.tuners import RandomSearch
 from tensorboard.plugins.hparams import api as hp
-
+import os
 
 class RandomSearchTB(RandomSearch):
     def __init__(self, **kwargs):
@@ -25,7 +25,11 @@ class RandomSearchTB(RandomSearch):
         score = 0
         if trial.score is not None:
             score = trial.score
-        with tf.summary.create_file_writer(self.log_dir+'/hparam_tuning/run-'+str(self.count)).as_default():
+        log_prefix = self.log_dir+'/hparam_tuning/run-'
+        tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
+        if tuner_id:
+            log_prefix += tuner_id + '-'
+        with tf.summary.create_file_writer(log_prefix+str(self.count)).as_default():
             hp.hparams(hparams)
             tf.summary.scalar(self.objective, score, step=1)
         self.count += 1
