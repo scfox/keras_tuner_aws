@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Spin up cluster of instances for keras tuning
+Resources:
+  TunerSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: Security Group for Keras Tuning
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6012
+          ToPort: 6012
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+  TunerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ec2.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: keras-tuner-policy
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: [
+              's3:*',
+              'iam:PassRole',
+              ]
+            Resource: '*'
+  TunerRoleInstProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Roles:
+        - !Ref TunerRole
+  TunerLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateData:
+        InstanceType: t3.micro
+        ImageId: ami-0e2a8509db267f072
+        KeyName: amKeyPair
+        SecurityGroups:
+          - !Ref 'TunerSecurityGroup'
+      LaunchTemplateName: tuner_lt
+  TunerMaster:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateName: tuner_lt
+        Version: '1'
+      IamInstanceProfile: !Ref TunerRoleInstProfile
+      Tags:
+        -
+          Key: Name
+          Value: Tuner_master
+      UserData:
+        Fn::Base64: |
+          #!/bin/bash
+          yum -y install git
+          cd /home/ec2-user
+          su ec2-user -c 'git clone https://github.com/scfox/keras_tuner_aws.git'
+          su ec2-user -c 'source /home/ec2-user/anaconda3/bin/activate tensorflow2_p36; cd keras_tuner_aws; pip install -r src/requirements.txt; ./start_tensorboard.sh; ./tune_model.sh;'
+Outputs:
+  URL:
+    Value: !Join ['', ['http://', !GetAtt TunerMaster.PublicIp ]]
