@@ -71,7 +71,29 @@ Resources:
           yum -y install git
           cd /home/ec2-user
           su ec2-user -c 'git clone https://github.com/scfox/keras_tuner_aws.git'
-          su ec2-user -c 'source /home/ec2-user/anaconda3/bin/activate tensorflow2_p36; cd keras_tuner_aws; pip install -r src/requirements.txt; ./start_tensorboard.sh; ./tune_model.sh;'
+          su ec2-user -c 'source /home/ec2-user/anaconda3/bin/activate tensorflow2_p36; cd keras_tuner_aws; pip install -r src/requirements.txt; ./start_tensorboard.sh; ./tune_master.sh;'
+  TunerSlave:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateName: tuner_lt
+        Version: '1'
+      IamInstanceProfile: !Ref TunerRoleInstProfile
+      Tags:
+        -
+          Key: Name
+          Value: Tuner_slave
+      UserData:
+        Fn::Base64:
+          Fn::Sub:
+            - |
+              #!/bin/bash
+              yum -y install git
+              cd /home/ec2-user
+              echo ${MasterIP} > masterip.txt
+              su ec2-user -c 'git clone https://github.com/scfox/keras_tuner_aws.git'
+              su ec2-user -c 'source /home/ec2-user/anaconda3/bin/activate tensorflow2_p36; cd keras_tuner_aws; pip install -r src/requirements.txt; ./start_tensorboard.sh; ./tune_slave.sh ${MasterIP};'
+            - { MasterIP: !GetAtt 'TunerMaster.PrivateIp' }
 Outputs:
   URL:
-    Value: !Join ['', ['http://', !GetAtt TunerMaster.PublicIp ]]
+    Value: !Join ['', ['http://', !GetAtt TunerMaster.PublicIp, ':6012' ]]
