@@ -1,6 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
   Spin up cluster of instances for keras tuning
+Parameters:
+  NumSlaves:
+    Type: Number
+    Description: Number of Slaves to run
+    Default: 2
+  SlavesInstType:
+    Type: String
+    Description: Slave instance type
+    Default: t3.small
 Resources:
   TunerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -76,7 +85,7 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
-        InstanceType: t3.micro
+        InstanceType: !Ref SlavesInstType
         ImageId: ami-0e2a8509db267f072
         KeyName: amKeyPair
         SecurityGroups:
@@ -108,7 +117,7 @@ Resources:
             LaunchTemplateId: !Ref SlaveLaunchTemplate
             Version: $Default
       TargetCapacitySpecification:
-        TotalTargetCapacity: 2
+        TotalTargetCapacity: !Ref NumSlaves
         DefaultTargetCapacityType: on-demand
 Outputs:
   URL:

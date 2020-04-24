@@ -19,6 +19,7 @@ class RandomSearchTB(RandomSearch):
         if kwargs.get('objective'):
             self.objective = kwargs.get('objective')
         self.trial_score = 999
+        self.tb_dir = 'tb'
         return
 
     def on_epoch_end(self, trial, model, epoch, logs=None):
@@ -43,7 +44,7 @@ class RandomSearchTB(RandomSearch):
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
         # score = self.pull_loss_from_metrics(trial)
-        log_prefix = self.log_dir+'/hparam_tuning/run-'
+        log_prefix = self.tb_dir+'/hparam_tuning/run-'
         tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
         if tuner_id:
             log_prefix += tuner_id + '-'
