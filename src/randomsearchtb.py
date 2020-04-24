@@ -3,7 +3,7 @@ from kerastuner.tuners import RandomSearch, BayesianOptimization
 from tensorboard.plugins.hparams import api as hp
 import os
 
-class RandomSearchTB(RandomSearch):
+class RandomSearchTB(BayesianOptimization):
     def __init__(self, **kwargs):
         """constructor"""
         super().__init__(**kwargs)
