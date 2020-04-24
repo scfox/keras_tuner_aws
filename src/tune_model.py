@@ -9,6 +9,8 @@ from sklearn.model_selection import train_test_split
 from tensorboard.plugins.hparams import api as hp
 from pathlib import Path
 import sys
+import boto3
+
 prj_path = str(Path(__file__).parent.absolute()) + '/../'
 print(f"prj_path: {prj_path}")
 sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for runtime
@@ -37,11 +39,23 @@ def _load_data(base_dir):
         return None, None, None, None
 
 
+def _clear_log_dir():
+    # delete logs from any previous run
+    if log_dir[:3] == 's3:':
+        # Logging to  s3
+        s3 = boto3.resource('s3')
+        bucket_name = log_dir.split('/')[2]
+        key = log_dir.split(bucket_name)[1][1:]
+        s3.Object(bucket_name, key).delete()
+    else:
+        # Logging to file
+        shutil.rmtree(log_dir, ignore_errors=True, onerror=None)
+
+
 if __name__ == "__main__":
     start = datetime.now()
     print(f"Starting hyper parameter optimizations at: {start}")
-    # delete logs from any previous run
-    shutil.rmtree(log_dir, ignore_errors=True, onerror=None)
+    _clear_log_dir()
     x_train, x_test, y_train, y_test = _load_data(model_dir+'input')
     x_train, y_train = training_xform(x_train, y_train)
 
