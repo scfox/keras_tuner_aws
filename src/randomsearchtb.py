@@ -18,14 +18,17 @@ class RandomSearchTB(RandomSearch):
         self.objective = 'val_loss'
         if kwargs.get('objective'):
             self.objective = kwargs.get('objective')
-        # self.oracle._score_trial =
+        self.trial_score = 999
         return
 
-    def _score_trial(self, trial):
-        super()._score_trial(trial)
-        print(f"_score_trial with score: {trial.score}")
+    def on_epoch_end(self, trial, model, epoch, logs=None):
+        print(f"on_epoch_end trial.score: {trial.score}")
+        if logs:
+            if 'loss' in logs:
+                self.trial_score = logs['loss']
 
     def on_trial_end(self, trial):
+        super().on_trial_end(trial)
         if trial is None:
             print("on_trial_end: trial is None")
         else:
@@ -34,10 +37,9 @@ class RandomSearchTB(RandomSearch):
             score = trial.score
         else:
             # in distributed training sometimes trial.score is set to 0 incorrectly
-            # print(f"loss metric: {trial.metrics.metrics['loss']._observations}")
-            score = self.pull_loss_from_metrics(trial)
-        print(f"trial.metrics: { pickle.dumps(trial.metrics) }")
-        super().on_trial_end(trial)
+            # set from value pulled from on_epoch_end
+            score = self.trial_score
+        # print(f"trial.metrics: { pickle.dumps(trial.metrics) }")
         config = trial.hyperparameters.get_config()
         hparams = self.get_hparams(config)
         # score = self.pull_loss_from_metrics(trial)
