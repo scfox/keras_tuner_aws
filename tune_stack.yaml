@@ -14,6 +14,18 @@ Parameters:
     Type: String
     Description: spot or on-demand
     Default: on-demand
+  OutputPath:
+    Type: String
+    Description: s3 path to place output
+    Default: s3://sagemaker-scf/catchjoe
+  MaxTrials:
+    Type: String
+    Description: max trials to run
+    Default: 25
+  MaxEpochs:
+    Type: String
+    Description: max epochs per trial
+    Default: 3
 Resources:
   TunerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
