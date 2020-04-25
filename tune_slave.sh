@@ -14,4 +14,5 @@ do
   else
     echo "tune model failed.  restarting..."
     echo "restarting..."
+  fi
 done
