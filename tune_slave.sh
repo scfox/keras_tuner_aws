@@ -10,9 +10,11 @@ do
   if [ $? -eq 0 ]
   then
     echo "tune_model completed."
+    aws s3 cp scripts/complete.txt ${2}/complete/${KERASTUNER_TUNER_ID}
     break
   else
     echo "tune model failed.  restarting..."
+    aws s3 cp /var/log/cloud-init-output.log ${2}/error/${KERASTUNER_TUNER_ID}.log
     echo "restarting..."
   fi
 done
