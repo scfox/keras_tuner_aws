@@ -5,7 +5,7 @@ import os
 import pickle
 
 
-class RandomSearchTB(RandomSearch):
+class RandomSearchTB(BayesianOptimization):
     def __init__(self, **kwargs):
         """constructor"""
         super().__init__(**kwargs)
