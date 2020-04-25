@@ -137,6 +137,7 @@ Resources:
             Version: $Default
       TargetCapacitySpecification:
         TotalTargetCapacity: !Ref NumSlaves
+        OnDemandTargetCapacity: 1
         DefaultTargetCapacityType: !Ref SlavesPayModel
 Outputs:
   URL:
