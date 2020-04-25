@@ -85,7 +85,7 @@ Resources:
       Tags:
         -
           Key: Name
-          Value: Tuner_master
+          Value: !Sub ${AWS::StackName}_master
       UserData:
         Fn::Base64:
           Fn::Sub:
@@ -113,7 +113,7 @@ Resources:
           - ResourceType: instance
             Tags:
               - Key: Name
-                Value: Tuner_slave
+                Value: !Sub ${AWS::StackName}_slave
         UserData:
           Fn::Base64:
             Fn::Sub:
