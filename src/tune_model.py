@@ -80,7 +80,7 @@ if __name__ == "__main__":
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5)
 
     tuner.search(x_train, y_train,
-                 epochs=20,
+                 epochs=100,
                  validation_data=(x_test, y_test),
                  callbacks=[early_stopping_cb, lr_scheduler_cb])
 

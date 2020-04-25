@@ -10,6 +10,10 @@ Parameters:
     Type: String
     Description: Slave instance type
     Default: t3.small
+  SlavesPayModel:
+    Type: String
+    Description: spot or on-demand
+    Default: spot
 Resources:
   TunerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
@@ -118,7 +122,7 @@ Resources:
             Version: $Default
       TargetCapacitySpecification:
         TotalTargetCapacity: !Ref NumSlaves
-        DefaultTargetCapacityType: on-demand
+        DefaultTargetCapacityType: !Ref SlavesPayModel
 Outputs:
   URL:
     Value: !Join ['', ['http://', !GetAtt TunerMaster.PublicIp, ':6012' ]]

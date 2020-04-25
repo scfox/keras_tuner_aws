@@ -1,1 +1,1 @@
-tensorboard --logdir=logs --port 6012 --bind_all &
+tensorboard --logdir=s3://sagemaker-scf/catchjoe/logs --port 6012 --bind_all &

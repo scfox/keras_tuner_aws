@@ -8,7 +8,7 @@ def build_model(hp):
     initializer = K.initializers.lecun_normal()
     layers = K.layers
     model = K.models.Sequential()
-    n_hidden = hp.Int('n_hidden', min_value=2, max_value=4)
+    n_hidden = hp.Int('n_hidden', min_value=2, max_value=6)
     dropout_rate = hp.Float('dropout_rate', min_value=0.06, max_value=0.1, sampling='linear')
     init_lr = hp.Fixed('init_lr', value=.001)
     beta1 = hp.Choice('beta1', values=[0.88, 0.95])
