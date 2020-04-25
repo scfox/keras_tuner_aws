@@ -8,10 +8,11 @@ def build_model(hp):
     initializer = K.initializers.lecun_normal()
     layers = K.layers
     model = K.models.Sequential()
-    n_hidden = hp.Int('n_hidden', min_value=2, max_value=6)
+    n_hidden = hp.Int('n_hidden', min_value=1, max_value=2)
     dropout_rate = hp.Float('dropout_rate', min_value=0.06, max_value=0.1, sampling='linear')
-    init_lr = hp.Fixed('init_lr', value=.001)
-    beta1 = hp.Choice('beta1', values=[0.88, 0.95])
+    init_lr = 0.001  # hp.Fixed('init_lr', value=.001)
+    beta1 = hp.Float('beta1', min_value=0.88, max_value=0.95, sampling='linear')
+    beta2 = hp.Float('beta2', min_value=0.98, max_value=0.999, sampling='linear')
     # ol_act = hp.Choice('ol_act', values=['selu', 'relu', 'sigmoid'])
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
@@ -24,7 +25,7 @@ def build_model(hp):
 
     model.add(layers.Dense(1, activation='sigmoid', kernel_initializer=initializer))
     model.compile(loss='binary_crossentropy',
-                  optimizer=tf.keras.optimizers.Nadam(lr=init_lr, beta_1=beta1, beta_2=0.999),
+                  optimizer=tf.keras.optimizers.Nadam(lr=init_lr, beta_1=beta1, beta_2=beta2),
                   metrics=[tf.keras.metrics.binary_accuracy])
     return model
 
