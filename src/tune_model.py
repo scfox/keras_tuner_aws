@@ -101,16 +101,20 @@ if __name__ == "__main__":
     print(f"Runtime: {runtime}")
 
     # save model
-    best_model = tuner.get_best_models(num_models=1)[0]
-    best_model.evaluate(x_test, y_test)
-    tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
-    save_prefix = model_dir + '/'
-    if tuner_id:
-        save_prefix += tuner_id + '/'
+    try:
+        best_model = tuner.get_best_models(num_models=1)[0]
+        best_model.evaluate(x_test, y_test)
+        tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
+        save_prefix = model_dir + '/'
+        if tuner_id:
+            save_prefix += tuner_id + '/'
 
-    best_model.save(os.path.join(save_prefix, 'trained'))
-    print('best model:')
-    print(f"used hyperparams: {tuner.get_best_hyperparameters(1)[0].values}")
+        best_model.save(os.path.join(save_prefix, 'trained'))
+        print('best model:')
+        print(f"used hyperparams: {tuner.get_best_hyperparameters(1)[0].values}")
 
-    # show score metrics
-    score_model(best_model, x_train, x_test, y_train, y_test)
+        # show score metrics
+        score_model(best_model, x_train, x_test, y_train, y_test)
+    except ValueError as error:
+        # probably another slave already did, print error and exit cleanly
+        print(error)
