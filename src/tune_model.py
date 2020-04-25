@@ -70,6 +70,10 @@ if __name__ == "__main__":
     print(f"Starting hyper parameter optimizations at: {start}")
 
     args, unknown = _parse_args()
+    print(f"output_path: {args.output_path}")
+    print(f"input_path: {args.input_path}")
+    print(f"max_trials: {args.max_trials}")
+    print(f"max_epochs: {args.max_epochs}")
     # distributed settings
     model_dir = args.output_path+'/models/'
     log_dir = 'logs'

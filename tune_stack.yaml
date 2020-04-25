@@ -110,8 +110,11 @@ Resources:
                 cd /home/ec2-user
                 echo ${MasterIP} > masterip.txt
                 su ec2-user -c 'git clone https://github.com/scfox/keras_tuner_aws.git'
-                su ec2-user -c 'source /home/ec2-user/anaconda3/bin/activate tensorflow2_p36; cd keras_tuner_aws; pip install -r src/requirements.txt; ./start_tensorboard.sh; ./tune_slave.sh ${MasterIP};'
-              - { MasterIP: !GetAtt 'TunerMaster.PrivateIp' }
+                su ec2-user -c 'cd keras_tuner_aws; ./tune_slave.sh ${MasterIP} ${OutputPath} ${MaxTrials} ${MaxEpochs};'
+              - MasterIP: !GetAtt 'TunerMaster.PrivateIp'
+                OutputPath: !Ref OutputPath
+                MaxTrials: !Ref MaxTrials
+                MaxEpochs: !Ref MaxEpochs
       LaunchTemplateName: !Sub ${AWS::StackName}_tuner_slave
   TunerSlave:
     Type: AWS::EC2::EC2Fleet
