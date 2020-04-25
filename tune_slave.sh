@@ -7,5 +7,11 @@ pip install -r src/requirements.txt
 while :
 do
   python src/tune_model.py --output_path=$2 --max_trials=$3 --max_epochs=$4
-  echo "restarting..."
+  if [ $? -eq 0 ]
+  then
+    echo "tune_model completed."
+    break
+  else
+    echo "tune model failed.  restarting..."
+    echo "restarting..."
 done
