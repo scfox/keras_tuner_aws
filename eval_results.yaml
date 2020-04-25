@@ -53,7 +53,7 @@ Resources:
     Type: AWS::EC2::LaunchTemplate
     Properties:
       LaunchTemplateData:
-        InstanceType: t3.micro
+        InstanceType: t3.small
         ImageId: ami-0e2a8509db267f072
         KeyName: amKeyPair
         SecurityGroups:

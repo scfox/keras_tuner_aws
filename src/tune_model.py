@@ -50,8 +50,8 @@ def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_path', type=str, default='s3://sagemaker-scf/default')
     parser.add_argument('--input_path', type=str, default='model/input')
-    parser.add_argument('--max_trials', type=str, default=25)
-    parser.add_argument('--max_epochs', type=str, default=5)
+    parser.add_argument('--max_trials', type=str, default=1)
+    parser.add_argument('--max_epochs', type=str, default=2)
     return parser.parse_known_args()
 
 
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
     tuner = RandomSearchTB(
         hypermodel=build_model,
-        objective='loss',
+        objective='val_loss',
         max_trials=int(args.max_trials),
         executions_per_trial=1,
         directory=log_dir,
