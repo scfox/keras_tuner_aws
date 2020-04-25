@@ -13,7 +13,7 @@ Parameters:
   OutputPath:
     Type: String
     Description: s3 path to place output
-    Default: s3://sagemaker-scf/catchjoe
+    Default: s3://sagemaker-scf/default
   MaxTrials:
     Type: String
     Description: max trials to run

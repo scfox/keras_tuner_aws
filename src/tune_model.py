@@ -19,16 +19,6 @@ sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for run
 from model.model import build_model, score_model, training_xform
 from src.randomsearchtb import RandomSearchTB
 
-# distributed settings
-# model_dir = 's3://sagemaker-scf/catchjoe/models/'
-# log_dir = 'logs'
-# tb_dir = 's3://sagemaker-scf/catchjoe/logs'
-
-# local settings
-# model_dir = 'model/'
-# log_dir = 'logs'
-# tb_dir = 'logs/tb_dir'
-
 
 def _load_data(base_dir):
     print(f"Reading from :{base_dir}")
@@ -58,7 +48,7 @@ def _clear_logs(log_dir, tb_dir):
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_path', type=str, default='s3://sagemaker-scf/catchjoe')
+    parser.add_argument('--output_path', type=str, default='s3://sagemaker-scf/default')
     parser.add_argument('--input_path', type=str, default='model/input')
     parser.add_argument('--max_trials', type=str, default=25)
     parser.add_argument('--max_epochs', type=str, default=5)
@@ -92,7 +82,7 @@ if __name__ == "__main__":
         max_trials=int(args.max_trials),
         executions_per_trial=1,
         directory=log_dir,
-        project_name='catchjoe')
+        project_name='hyp_tune')
 
     tuner.tb_dir = tb_dir
     print(f"Search space: { tuner.search_space_summary() }")
