@@ -10,10 +10,6 @@ Parameters:
     Type: String
     Description: Slave instance type
     Default: t3.small
-  SlavesPayModel:
-    Type: String
-    Description: spot or on-demand
-    Default: on-demand
   OutputPath:
     Type: String
     Description: s3 path to place output
@@ -104,8 +100,8 @@ Resources:
         InstanceType: !Ref SlavesInstType
         ImageId: ami-0e2a8509db267f072
         KeyName: amKeyPair
-        SecurityGroups:
-          - !Ref 'TunerSecurityGroup'
+        SecurityGroupIds:
+          - !GetAtt TunerSecurityGroup.GroupId
         IamInstanceProfile:
           Arn: !GetAtt TunerRoleInstProfile.Arn
         TagSpecifications:
@@ -129,16 +125,15 @@ Resources:
                 MaxEpochs: !Ref MaxEpochs
       LaunchTemplateName: !Sub ${AWS::StackName}_tuner_slave
   TunerSlave:
-    Type: AWS::EC2::EC2Fleet
+    Type: AWS::EC2::SpotFleet
     Properties:
-      LaunchTemplateConfigs:
-        - LaunchTemplateSpecification:
-            LaunchTemplateId: !Ref SlaveLaunchTemplate
-            Version: $Default
-      TargetCapacitySpecification:
-        TotalTargetCapacity: !Ref NumSlaves
-        OnDemandTargetCapacity: 1
-        DefaultTargetCapacityType: !Ref SlavesPayModel
+      SpotFleetRequestConfigData:
+        IamFleetRole: arn:aws:iam::170290590187:role/aws-ec2-spot-fleet-tagging-role
+        LaunchTemplateConfigs:
+          - LaunchTemplateSpecification:
+              LaunchTemplateId: !Ref SlaveLaunchTemplate
+              Version: '1'
+        TargetCapacity: !Ref NumSlaves
 Outputs:
   URL:
     Value: !Join ['', ['http://', !GetAtt TunerMaster.PublicIp, ':6012' ]]

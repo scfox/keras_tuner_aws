@@ -12,17 +12,17 @@ def build_model(hp):
     dropout_rate = hp.Float('dropout_rate', min_value=0.06, max_value=0.1, sampling='linear')
     init_lr = hp.Fixed('init_lr', value=.001)
     beta1 = hp.Choice('beta1', values=[0.88, 0.95])
+    ol_act = hp.Choice('ol_act', values=['selu', 'relu', 'sigmoid'])
     model.add(layers.BatchNormalization())
     model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
     model.add(layers.Dropout(rate=dropout_rate))
-
     # add hidden layers based on hyperparameter
     for i in range(0, n_hidden):
         model.add(layers.BatchNormalization())
         model.add(layers.Dense(35, activation=tf.nn.selu, kernel_initializer=initializer))
         model.add(layers.Dropout(rate=dropout_rate))
 
-    model.add(layers.Dense(1, activation=tf.nn.selu, kernel_initializer=initializer))
+    model.add(layers.Dense(1, activation=ol_act, kernel_initializer=initializer))
     model.compile(loss='binary_crossentropy',
                   optimizer=tf.keras.optimizers.Nadam(lr=init_lr, beta_1=beta1, beta_2=0.999),
                   metrics=[tf.keras.metrics.binary_accuracy])
