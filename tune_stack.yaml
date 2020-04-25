@@ -13,7 +13,7 @@ Parameters:
   SlavesPayModel:
     Type: String
     Description: spot or on-demand
-    Default: spot
+    Default: on-demand
 Resources:
   TunerSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"

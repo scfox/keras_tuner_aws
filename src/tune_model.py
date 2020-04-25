@@ -10,6 +10,7 @@ from tensorboard.plugins.hparams import api as hp
 from pathlib import Path
 import sys
 import boto3
+import argparse
 
 prj_path = str(Path(__file__).parent.absolute()) + '/../'
 print(f"prj_path: {prj_path}")
@@ -19,9 +20,9 @@ from model.model import build_model, score_model, training_xform
 from src.randomsearchtb import RandomSearchTB
 
 # distributed settings
-model_dir = 's3://sagemaker-scf/catchjoe/models/'
-log_dir = 'logs'
-tb_dir = 's3://sagemaker-scf/catchjoe/logs'
+# model_dir = 's3://sagemaker-scf/catchjoe/models/'
+# log_dir = 'logs'
+# tb_dir = 's3://sagemaker-scf/catchjoe/logs'
 
 # local settings
 # model_dir = 'model/'
@@ -41,7 +42,7 @@ def _load_data(base_dir):
         return None, None, None, None
 
 
-def _clear_logs():
+def _clear_logs(log_dir, tb_dir):
     # delete logs from any previous run
     shutil.rmtree(log_dir, ignore_errors=True, onerror=None)
     if tb_dir[:3] == 's3:':
@@ -55,21 +56,36 @@ def _clear_logs():
         shutil.rmtree(tb_dir, ignore_errors=True, onerror=None)
 
 
+def _parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output_path', type=str, default='s3://sagemaker-scf/catchjoe')
+    parser.add_argument('--input_path', type=str, default='model/input')
+    parser.add_argument('--max_trials', type=str, default=25)
+    parser.add_argument('--max_epochs', type=str, default=5)
+    return parser.parse_known_args()
+
+
 if __name__ == "__main__":
     start = datetime.now()
     print(f"Starting hyper parameter optimizations at: {start}")
-    _clear_logs()
-    x_train, x_test, y_train, y_test = _load_data('model/input')
+
+    args, unknown = _parse_args()
+    # distributed settings
+    model_dir = args.output_path+'/models/'
+    log_dir = 'logs'
+    tb_dir = args.output_path+'/logs'
+
+    _clear_logs(log_dir, tb_dir)
+    x_train, x_test, y_train, y_test = _load_data(args.input_path)
     x_train, y_train = training_xform(x_train, y_train)
 
     tf.config.threading.set_inter_op_parallelism_threads = 0
     tf.config.threading.set_intra_op_parallelism_threads = 0
-    tf.config.threading
 
     tuner = RandomSearchTB(
         hypermodel=build_model,
         objective='loss',
-        max_trials=25,
+        max_trials=args.max_trials,
         executions_per_trial=1,
         directory=log_dir,
         project_name='catchjoe')
@@ -80,7 +96,7 @@ if __name__ == "__main__":
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5)
 
     tuner.search(x_train, y_train,
-                 epochs=5,
+                 epochs=args.max_epochs,
                  validation_data=(x_test, y_test),
                  callbacks=[early_stopping_cb, lr_scheduler_cb])
 
@@ -94,9 +110,9 @@ if __name__ == "__main__":
     best_model = tuner.get_best_models(num_models=1)[0]
     best_model.evaluate(x_test, y_test)
     tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
-    save_prefix = model_dir
+    save_prefix = model_dir + '/'
     if tuner_id:
-        save_prefix += '-' + tuner_id + '/'
+        save_prefix += tuner_id + '/'
 
     best_model.save(os.path.join(save_prefix, 'trained'))
     print('best model:')

@@ -24,6 +24,7 @@ class RandomSearchTB(RandomSearch):
 
     def on_epoch_end(self, trial, model, epoch, logs=None):
         print(f"on_epoch_end trial.score: {trial.score}")
+        super().on_epoch_end(trial, model, epoch, logs)
         if logs:
             if 'loss' in logs:
                 self.trial_score = logs['loss']
