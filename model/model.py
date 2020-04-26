@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow import keras as K
 from tensorflow.keras import backend as KBk
 from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, log_loss, accuracy_score
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, ADASYN
 
 
 def build_model(hp):
