@@ -123,7 +123,7 @@ if __name__ == "__main__":
         best_model = tuner.get_best_models(num_models=1)[0]
         best_model.evaluate(x_test, y_test)
 
-        best_model.save(os.path.join(save_prefix, 'best'))
+        best_model.save(model_dir+'/best')
         print('best model:')
         print(f"used hyperparams: {tuner.get_best_hyperparameters(1)[0].values}")
 
