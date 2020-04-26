@@ -68,7 +68,7 @@ def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_path', type=str, default='../logs/output')
     parser.add_argument('--input_path', type=str, default='../model/input')
-    parser.add_argument('--max_epochs', type=str, default=25)
+    parser.add_argument('--max_epochs', type=str, default=2)
     return parser.parse_known_args()
 
 

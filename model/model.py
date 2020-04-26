@@ -35,16 +35,18 @@ def score_model(model, x_train, x_test, y_train, y_test):
     """Score model performance"""
     print("\nScores on training:")
     y_train_pred = [float(p[0]) for p in model.predict_classes(x_train)]
-    show_metrics(y_train, y_train_pred)
-
+    y_train_proba = [float(p[0]) for p in model.predict(x_train)]
+    show_metrics(y_train, y_train_pred, y_train_proba)
+    # q = model.predict_proba(x_train)
     print("\nScores on test:")
     y_test_vals = [i[0] for i in y_test]
     y_test_pred = [float(p[0]) for p in model.predict_classes(x_test)]
-    show_metrics(y_test_vals, y_test_pred)
+    y_train_proba = [float(p[0]) for p in model.predict(x_test)]
+    show_metrics(y_test_vals, y_test_pred, y_train_proba)
 
 
-def show_metrics(y, y_pred):
-    print(f"loss: {K.losses.binary_crossentropy(y, y_pred)}")
+def show_metrics(y, y_pred, y_proba):
+    print(f"loss: {K.losses.binary_crossentropy(y, y_proba)}")
     print(f"log_loss: {log_loss(y, y_pred)}")
     print(f"f1: {f1_score(y, y_pred , average='macro')}")
     print(f"precision: {precision_score(y, y_pred , average='macro')}")

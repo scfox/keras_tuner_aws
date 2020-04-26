@@ -24,7 +24,7 @@ class RandomSearchTB(BayesianOptimization):
 
     def run_trial(self, trial, *args, **kwargs):
         # add batch size as hyper param
-        kwargs['batch_size'] = trial.hyperparameters.Int('batch_size', 8, 128, step=8)
+        kwargs['batch_size'] = trial.hyperparameters.Int('batch_size', 64, 256, step=32)
         super().run_trial(trial, *args, **kwargs)
 
     def on_epoch_end(self, trial, model, epoch, logs=None):
