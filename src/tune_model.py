@@ -76,6 +76,12 @@ if __name__ == "__main__":
     tf.config.threading.set_inter_op_parallelism_threads = 0
     tf.config.threading.set_intra_op_parallelism_threads = 0
 
+    tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
+    save_prefix = model_dir + '/'
+    if tuner_id:
+        save_prefix += tuner_id + '/'
+    checkpoint_path = os.path.join(save_prefix, 'cp')
+
     tuner = RandomSearchTB(
         hypermodel=build_model,
         objective='val_loss',
@@ -86,13 +92,14 @@ if __name__ == "__main__":
 
     tuner.tb_dir = tb_dir
     print(f"Search space: { tuner.search_space_summary() }")
-    early_stopping_cb = K.callbacks.EarlyStopping(monitor='loss', patience=20)
+    early_stopping_cb = K.callbacks.EarlyStopping(monitor='val_loss', patience=10)
+    checkpoint_cb = K.callbacks.ModelCheckpoint(checkpoint_path, save_best_only=True, verbose=1, monitor='val_loss')
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='loss', factor=0.5, patience=5)
 
     tuner.search(x_train, y_train,
                  epochs=int(args.max_epochs),
                  validation_data=(x_test, y_test),
-                 callbacks=[early_stopping_cb, lr_scheduler_cb])
+                 callbacks=[early_stopping_cb, lr_scheduler_cb, checkpoint_cb])
 
     print(tuner.results_summary())
     end = datetime.now()
@@ -104,12 +111,8 @@ if __name__ == "__main__":
     try:
         best_model = tuner.get_best_models(num_models=1)[0]
         best_model.evaluate(x_test, y_test)
-        tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
-        save_prefix = model_dir + '/'
-        if tuner_id:
-            save_prefix += tuner_id + '/'
 
-        best_model.save(os.path.join(save_prefix, 'trained'))
+        best_model.save(os.path.join(save_prefix, 'best'))
         print('best model:')
         print(f"used hyperparams: {tuner.get_best_hyperparameters(1)[0].values}")
 
