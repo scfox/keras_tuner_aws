@@ -9,7 +9,7 @@ Parameters:
   SlavesInstType:
     Type: String
     Description: Slave instance type
-    Default: t3.small
+    Default: t3.large
   OutputPath:
     Type: String
     Description: s3 path to place output

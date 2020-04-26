@@ -89,7 +89,7 @@ if __name__ == "__main__":
         hypermodel=build_model,
         objective='val_loss',
         max_trials=int(args.max_trials),
-        executions_per_trial=1,
+        executions_per_trial=2,
         directory=log_dir,
         project_name='hyp_tune')
 
