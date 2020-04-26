@@ -24,7 +24,13 @@ def _load_data(base_dir):
     if base_dir:
         x = pd.read_csv(os.path.join(base_dir, 'x.csv')).to_numpy()
         y = pd.read_csv(os.path.join(base_dir, 'y.csv')).to_numpy()
+        print(f"x.shape: {x.shape}")
+        print(f"y.shape: {y.shape}")
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=23)
+        print(f"x_train.shape: {x_train.shape}")
+        print(f"x_test.shape: {x_test.shape}")
+        print(f"y_train.shape: {y_train.shape}")
+        print(f"y_test.shape: {y_test.shape}")
         return x_train, x_test, y_train, y_test
     else:
         print('Error: No input path specified.')

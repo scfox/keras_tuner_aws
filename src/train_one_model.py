@@ -116,7 +116,7 @@ if __name__ == "__main__":
     model.fit(x_train, y_train,
               epochs=int(args.max_epochs),
               validation_data=(x_test, y_test),
-              batch_size=8,
+              batch_size=128,
               callbacks=[early_stopping_cb, lr_scheduler_cb, checkpoint_cb, tensorboard_cb])
 
     end = datetime.now()
