@@ -33,7 +33,7 @@ def _load_data(base_dir):
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='../model/trained')
+    parser.add_argument('--model_path', type=str, default='../logs/output/models/cp')
     parser.add_argument('--input_path', type=str, default='../model/input')
     return parser.parse_known_args()
 

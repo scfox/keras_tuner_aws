@@ -16,7 +16,7 @@ prj_path = str(Path(__file__).parent.absolute()) + '/../'
 print(f"prj_path: {prj_path}")
 sys.path.append(os.path.dirname(prj_path))  # to add root of prj to path for runtime
 
-from model.model import build_model, score_model, training_xform
+from model.model import build_model, score_model, training_xform, f1b
 from src.randomsearchtb import RandomSearchTB
 
 
@@ -46,27 +46,43 @@ def _clear_logs(log_dir, tb_dir):
         shutil.rmtree(tb_dir, ignore_errors=True, onerror=None)
 
 
+class HypParams:
+    def Int(self, name, **kwargs):
+        if name == 'n_hidden':
+            return 2
+        else:
+            return 0
+
+    def Float(self, name, **kwargs):
+        if name == 'dropout_rate':
+            return 0.1
+        elif name == 'beta1':
+            return 0.930
+        elif name == 'beta2':
+            return 0.9945
+        else:
+            return 0
+
+
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_path', type=str, default='../logs/output')
-    parser.add_argument('--input_path', type=str, default='model/input')
-    parser.add_argument('--max_trials', type=str, default=2)
-    parser.add_argument('--max_epochs', type=str, default=1)
+    parser.add_argument('--input_path', type=str, default='../model/input')
+    parser.add_argument('--max_epochs', type=str, default=25)
     return parser.parse_known_args()
 
 
 if __name__ == "__main__":
     start = datetime.now()
-    print(f"Starting hyper parameter optimizations at: {start}")
+    print(f"Starting training of model at: {start}")
 
     args, unknown = _parse_args()
     print(f"output_path: {args.output_path}")
     print(f"input_path: {args.input_path}")
-    print(f"max_trials: {args.max_trials}")
     print(f"max_epochs: {args.max_epochs}")
     # distributed settings
     model_dir = args.output_path+'/models'
-    log_dir = 'logs'
+    log_dir = '../logs'
     tb_dir = args.output_path+'/logs'
 
     _clear_logs(log_dir, tb_dir)
@@ -76,27 +92,17 @@ if __name__ == "__main__":
     tf.config.threading.set_inter_op_parallelism_threads = 0
     tf.config.threading.set_intra_op_parallelism_threads = 0
 
-    tuner_id = os.environ.get('KERASTUNER_TUNER_ID')
     save_prefix = model_dir + '/'
-    if tuner_id:
-        save_prefix += tuner_id + '/'
     checkpoint_path = os.path.join(save_prefix, 'cp')
 
-    tuner = RandomSearchTB(
-        hypermodel=build_model,
-        objective='val_loss',
-        max_trials=int(args.max_trials),
-        executions_per_trial=3,
-        directory=log_dir,
-        project_name='hyp_tune')
+    hp = HypParams()
+    model = build_model(hp)
 
-    tuner.tb_dir = tb_dir
-    print(f"Search space: { tuner.search_space_summary() }")
     early_stopping_cb = K.callbacks.EarlyStopping(monitor='val_loss',
                                                   min_delta=0.00001,
                                                   restore_best_weights=True,
                                                   verbose=1,
-                                                  patience=8)
+                                                  patience=7)
     checkpoint_cb = K.callbacks.ModelCheckpoint(checkpoint_path,
                                                 save_best_only=True,
                                                 verbose=1,
@@ -104,31 +110,25 @@ if __name__ == "__main__":
     lr_scheduler_cb = K.callbacks.ReduceLROnPlateau(monitor='val_loss',
                                                     min_delta=0.0001,
                                                     factor=0.5,
-                                                    patience=3,
+                                                    patience=2,
                                                     verbose=1)
     tensorboard_cb = K.callbacks.TensorBoard(log_dir)
-    tuner.search(x_train, y_train,
-                 epochs=int(args.max_epochs),
-                 validation_data=(x_test, y_test),
-                 callbacks=[early_stopping_cb, lr_scheduler_cb, checkpoint_cb])
+    model.fit(x_train, y_train,
+              epochs=int(args.max_epochs),
+              validation_data=(x_test, y_test),
+              batch_size=8,
+              callbacks=[early_stopping_cb, lr_scheduler_cb, checkpoint_cb, tensorboard_cb])
 
-    print(tuner.results_summary())
     end = datetime.now()
     runtime = end - start
-    print(f"Hyper parameter optimizations ended at: {end}")
+    print(f"Model training ended at: {end}")
     print(f"Runtime: {runtime}")
 
-    # save model
-    try:
-        best_model = tuner.get_best_models(num_models=1)[0]
-        best_model.evaluate(x_test, y_test)
+    # show score metrics
+    score_model(model, x_train, x_test, y_train, y_test)
 
-        best_model.save(os.path.join(save_prefix, 'best'))
-        print('best model:')
-        print(f"used hyperparams: {tuner.get_best_hyperparameters(1)[0].values}")
+    # load last checkpoint
+    cp_model = tf.keras.models.load_model(checkpoint_path)
+    print(f"\n--- Last Checkpoint model performance: ")
+    score_model(cp_model, x_train, x_test, y_train, y_test)
 
-        # show score metrics
-        score_model(best_model, x_train, x_test, y_train, y_test)
-    except ValueError as error:
-        # probably another slave already did, print error and exit cleanly
-        print(error)

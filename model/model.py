@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras as K
-from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, log_loss
+from tensorflow.keras import backend as KBk
+from sklearn.metrics import f1_score, precision_score, recall_score, confusion_matrix, log_loss, accuracy_score
 from imblearn.over_sampling import SMOTE
 
 
@@ -24,7 +25,7 @@ def build_model(hp):
         model.add(layers.Dropout(rate=dropout_rate))
 
     model.add(layers.Dense(1, activation='sigmoid', kernel_initializer=initializer))
-    model.compile(loss='binary_crossentropy',
+    model.compile(loss=K.losses.binary_crossentropy,  # 'binary_crossentropy', K.metrics.BinaryAccuracy
                   optimizer=tf.keras.optimizers.Nadam(lr=init_lr, beta_1=beta1, beta_2=beta2),
                   metrics=[tf.keras.metrics.binary_accuracy])
     return model
@@ -46,6 +47,7 @@ def show_metrics(y, y_pred):
     print(f"f1: {f1_score(y, y_pred , average='macro')}")
     print(f"precision: {precision_score(y, y_pred , average='macro')}")
     print(f"recall: {recall_score(y, y_pred , average='macro')}")
+    print(f"accuracy_score: {accuracy_score(y, y_pred )}")
     print(f"confusion matrix:")
     print(f"{confusion_matrix(y, y_pred)}")
 
@@ -60,3 +62,12 @@ def training_xform(x_train, y_train):
     print(f"After OverSampling, counts of label '0': {sum(y_train == 0)}")
     return x_train, y_train
 
+
+def f1b(y_true, y_pred):
+    true_positives = KBk.sum(KBk.round(KBk.clip(y_true * y_pred, 0, 1)))
+    possible_positives = KBk.sum(KBk.round(KBk.clip(y_true, 0, 1)))
+    predicted_positives = KBk.sum(KBk.round(KBk.clip(y_pred, 0, 1)))
+    precision = true_positives / (predicted_positives + KBk.epsilon())
+    recall = true_positives / (possible_positives + KBk.epsilon())
+    f1_val = 2*(precision*recall)/(precision+recall+KBk.epsilon())
+    return f1_val

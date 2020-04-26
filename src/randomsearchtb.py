@@ -22,6 +22,11 @@ class RandomSearchTB(BayesianOptimization):
         self.tb_dir = 'tb'
         return
 
+    def run_trial(self, trial, *args, **kwargs):
+        # add batch size as hyper param
+        kwargs['batch_size'] = trial.hyperparameters.Int('batch_size', 8, 128, step=8)
+        super().run_trial(trial, *args, **kwargs)
+
     def on_epoch_end(self, trial, model, epoch, logs=None):
         print(f"on_epoch_end trial.score: {trial.score}")
         super().on_epoch_end(trial, model, epoch, logs)
